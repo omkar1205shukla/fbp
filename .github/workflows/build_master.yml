@@ -1,4 +1,4 @@
-name: Build APK & IPA on master updates
+name: Build APK & IPA (Student & Teacher) on master updates
 
 on:
   push:
@@ -20,22 +20,16 @@ jobs:
       - name: Decide if build should run
         id: check
         run: |
-          # Default: run build for direct pushes
           run_build="true"
-
-          # If triggered by PR, only run if it was merged
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            if [ "${{ github.event.pull_request.merged }}" = "true" ]; then
-              run_build="true"
-            else
+            if [ "${{ github.event.pull_request.merged }}" != "true" ]; then
               run_build="false"
             fi
           fi
-
           echo "run_build=$run_build" >> $GITHUB_OUTPUT
 
   build-android:
-    name: Build Android APK
+    name: Build Android Flavors
     runs-on: ubuntu-latest
     needs: check-merge
     if: needs.check-merge.outputs.should_run == 'true'
@@ -52,17 +46,28 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build APK
-        run: flutter build apk --release
+      # Build Student APK
+      - name: Build Student APK
+        run: flutter build apk --flavor student -t lib/main_student.dart --release
 
-      - name: Upload APK artifact
+      - name: Upload Student APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: student-release-apk
+          path: build/app/outputs/flutter-apk/app-student-release.apk
+
+      # Build Teacher APK
+      - name: Build Teacher APK
+        run: flutter build apk --flavor teacher -t lib/main_teacher.dart --release
+
+      - name: Upload Teacher APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: teacher-release-apk
+          path: build/app/outputs/flutter-apk/app-teacher-release.apk
 
   build-ios:
-    name: Build iOS IPA
+    name: Build iOS Flavors
     runs-on: macos-latest
     needs: build-android
     if: needs.check-merge.outputs.should_run == 'true'
@@ -80,22 +85,31 @@ jobs:
         run: flutter pub get
 
       - name: Install CocoaPods
-        run: 
+        run: |
           cd ios
           pod repo update
           pod install
           cd ..
 
-
       - name: Setup Xcode
         run: sudo xcode-select -switch /Applications/Xcode.app
 
-      # Optional: Add signing step if needed
-      - name: Build IPA (unsigned)
-        run: flutter build ipa --release --no-codesign
+      # Build Student IPA (unsigned)
+      - name: Build Student IPA
+        run: flutter build ipa --flavor student -t lib/main_student.dart --release --no-codesign
 
-      - name: Upload IPA artifact
+      - name: Upload Student IPA
         uses: actions/upload-artifact@v4
         with:
-          name: app-release-ipa
+          name: student-release-ipa
+          path: build/ios/ipa/*.ipa
+
+      # Build Teacher IPA (unsigned)
+      - name: Build Teacher IPA
+        run: flutter build ipa --flavor teacher -t lib/main_teacher.dart --release --no-codesign
+
+      - name: Upload Teacher IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: teacher-release-ipa
           path: build/ios/ipa/*.ipa
