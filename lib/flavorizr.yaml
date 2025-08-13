@@ -1,0 +1,18 @@
+flavors:
+  student:
+    app:
+      name: "Student App"
+
+    android:
+      applicationId: "com.azanpro.student"  
+    ios:
+      bundleId: "com.azanpro.student"
+ 
+  teacher:
+    app:
+      name: "Teacher App"
+  
+    android:
+      applicationId: "com.azanpro.teacher"
+    ios:
+      bundleId: "com.azanpro.teacher"
