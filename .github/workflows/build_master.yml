@@ -1,0 +1,93 @@
+name: Build APK & IPA on master updates
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types:
+      - closed
+    branches:
+      - master
+
+jobs:
+  check-merge:
+    name: Check if build should run
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.check.outputs.run_build }}
+    steps:
+      - name: Decide if build should run
+        id: check
+        run: |
+          # Default: run build for direct pushes
+          run_build="true"
+
+          # If triggered by PR, only run if it was merged
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            if [ "${{ github.event.pull_request.merged }}" = "true" ]; then
+              run_build="true"
+            else
+              run_build="false"
+            fi
+          fi
+
+          echo "run_build=$run_build" >> $GITHUB_OUTPUT
+
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    needs: check-merge
+    if: needs.check-merge.outputs.should_run == 'true'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.24.0"
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+  build-ios:
+    name: Build iOS IPA
+    runs-on: macos-latest
+    needs: build-android
+    if: needs.check-merge.outputs.should_run == 'true'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.24.0"
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Setup Xcode
+        run: sudo xcode-select -switch /Applications/Xcode.app
+
+      # Optional: Add signing step if needed
+      - name: Build IPA (unsigned)
+        run: flutter build ipa --release --no-codesign
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-ipa
+          path: build/ios/ipa/*.ipa
