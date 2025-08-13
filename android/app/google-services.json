@@ -8,6 +8,44 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:426140031121:android:55052223fea2eb5080c730",
+        "android_client_info": {
+          "package_name": "com.azanpro.student"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQ92v1SU9Lrb7jRx1Xu7NLO_jWKwknu1w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:426140031121:android:78515adaa5fb27bf80c730",
+        "android_client_info": {
+          "package_name": "com.azanpro.teacher"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQ92v1SU9Lrb7jRx1Xu7NLO_jWKwknu1w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:426140031121:android:ecd654053e6fdb1780c730",
         "android_client_info": {
           "package_name": "com.example.fbp"
